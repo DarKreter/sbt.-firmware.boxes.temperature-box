@@ -5,7 +5,8 @@
 #ifndef F1XX_PROJECT_TEMPLATE_CANTEST_HPP
 #define F1XX_PROJECT_TEMPLATE_CANTEST_HPP
 
-#include "TaskManager.hpp"
+#include "Task.hpp"
+#include "CommCAN.h"
 
 class CanTest : public SBT::System::PeriodicTask {
 public:

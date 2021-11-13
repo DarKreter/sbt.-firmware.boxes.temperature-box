@@ -3,16 +3,18 @@
 //
 
 #include "canTest.hpp"
+#include "CommCAN.h"
 #include "Hardware.hpp"
 
-CanTest::CanTest()  : PeriodicTask({}, 2, 500) {
-
-}
+CanTest::CanTest() : PeriodicTask({}, 2, 1000) {}
 
 void CanTest::initialize() {
-    Hardware::can.Initialize(BoxId::BOX1, {});
+  using namespace SBT::System;
+  Communication::CAN::Init(SBT::System::Communication::CANBoardID::PiBOX);
 }
 
 void CanTest::run() {
-    Hardware::can.Send(ParameterId::ACCEL_X, 0.43f);
+  using namespace SBT::System;
+  Communication::CAN::Send(Communication::CANParameterID::HeartBeat,
+                           HAL_GetTick());
 }
