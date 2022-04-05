@@ -1,8 +1,5 @@
-#include "Hardware.hpp"
-#include "LedDebug.hpp"
 #include "SBT-SDK.hpp"
-#include "TaskManager.hpp"
-#include "canTest.hpp"
+#include <FreeRTOS.h>
 
 extern "C" {
 __attribute__((aligned(64))) uint8_t ucHeap[configTOTAL_HEAP_SIZE];
@@ -102,30 +99,19 @@ void operator delete(void* ptr) { vPortFree(ptr); }
 
 void operator delete(void* ptr, [[maybe_unused]] size_t) { vPortFree(ptr); }
 
-// This is "main" - entry function that is called after system initialization
-void entryPoint() {
-  using namespace SBT;
-  using namespace SBT::System;
-
-  System::Init();
-
-  TaskManager::registerTask(std::make_shared<LedDebug>());
-  TaskManager::registerTask(std::make_shared<CanTest>());
-
-  System::Start();
-}
+extern void entryPoint();
 
 // First function that is called after boot-up
 void resetHandler() {
   // Zero the default-initialized data
-  for (size_t* word = __bss_start; word < __bss_end; ++word) {
-    *word = 0;
-  }
+  memset(__bss_start, 0,
+         reinterpret_cast<unsigned>(__bss_end) -
+             reinterpret_cast<unsigned>(__bss_start));
 
   // Initialize static data
-  for (ptrdiff_t idx = 0; idx < __data_end - __data_start; ++idx) {
-    *(__data_start + idx) = *(__data_load + idx);
-  }
+  memcpy(__data_start, __data_load,
+         reinterpret_cast<unsigned>(__data_end) -
+             reinterpret_cast<unsigned>(__data_start));
 
   // Enable semihosting
   //    initialise_monitor_handles();
@@ -137,9 +123,7 @@ void resetHandler() {
 }
 
 // Handler for 1ms interrupt
-void systick() {
-  SBT::System::SystickHandler();
-}
+void systick() { SBT::System::SystickHandler(); }
 
 // When something goes wrong
 void hardfault() {
@@ -148,6 +132,5 @@ void hardfault() {
 }
 
 // Callbacks for FreeRTOS supervisor calls
-void svcHandler() { vPortSVCHandler(); }
-
-void pendSvcHandler() { xPortPendSVHandler(); }
+[[gnu::naked]] void svcHandler() { asm volatile("b vPortSVCHandler"); }
+[[gnu::naked]] void pendSvcHandler() { asm volatile("b xPortPendSVHandler"); }
