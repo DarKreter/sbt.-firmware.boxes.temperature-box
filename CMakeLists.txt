@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.12.0)
 
 set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/App/Common/STM32F103CBTx_FLASH.ld")
 
@@ -10,6 +10,19 @@ project(f1xx-project-template
         HOMEPAGE_URL ""
         LANGUAGES CXX C
         )
+
+include(cmake/config-reader.cmake)
+
+if(NOT CONFIG_FILE)
+  set(CONFIG_FILE ".config")
+  message(NOTICE "Using default config file: ${CONFIG_FILE}")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/${CONFIG_FILE}")
+  ReadConfig("${CONFIG_FILE}")
+else()
+  message(NOTICE "Config file ${CONFIG_FILE} does not exist, ignoring configuration")
+endif()
 
 add_subdirectory(Lib)
 add_subdirectory(Core)
