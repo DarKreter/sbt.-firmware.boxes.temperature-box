@@ -5,7 +5,7 @@
 #include "UARTGatekeeper.hpp"
 
 // Create a task named "UARTGatekeeper" with priority 4
-UARTGatekeeper::UARTGatekeeper() : SBT::System::Task("UARTGatekeeper", 4) {
+UARTGatekeeper::UARTGatekeeper() : SBT::System::Task("UARTGatekeeper", 4, 128) {
   // Create a binary semaphore
   TxComplete = xSemaphoreCreateBinary();
 
