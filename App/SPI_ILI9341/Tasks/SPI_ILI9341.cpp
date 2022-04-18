@@ -21,7 +21,7 @@ using namespace SBT::Hardware;
 // Create a task named "SPI_ILI9341" with priority 3. It will be executed every
 // 0.5 seconds.
 SPI_ILI9341::SPI_ILI9341(std::shared_ptr<UARTGatekeeper> UARTGatekeeperTask)
-    : SBT::System::PeriodicTask("SPI_ILI9341", 3, 500),
+    : SBT::System::PeriodicTask("SPI_ILI9341", 3, 500, 128),
       UARTGatekeeperTask(std::move(UARTGatekeeperTask)) {
   // Create a binary semaphore
   TxComplete = xSemaphoreCreateBinary();
