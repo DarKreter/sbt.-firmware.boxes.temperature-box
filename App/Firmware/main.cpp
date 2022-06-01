@@ -1,5 +1,10 @@
-#include "ExampleTask.hpp"
+#include "ReadTemp.hpp"
 #include "SBT-SDK.hpp"
+#include "TempCAN.hpp"
+
+#ifdef SBT_TEMP_CANTEST
+#include "CANPrint.hpp"
+#endif
 
 using namespace SBT::System;
 
@@ -8,8 +13,18 @@ void entryPoint()
 {
     Init();
 
-    // Register your tasks here:
-    TaskManager::registerTask(std::make_shared<ExampleTask>());
+    std::vector<std::shared_ptr<ReadTemp>> readTempTasks = {
+        std::make_shared<ReadTemp>(&SBT::Hardware::uart2),
+        std::make_shared<ReadTemp>(&SBT::Hardware::uart3)};
+
+    for(const auto& readTempTask : readTempTasks)
+        TaskManager::registerTask(readTempTask);
+
+    TaskManager::registerTask(std::make_shared<TempCAN>(readTempTasks));
+
+#ifdef SBT_TEMP_CANTEST
+    TaskManager::registerTask(std::make_shared<CANPrint>());
+#endif
 
     Start();
 }
